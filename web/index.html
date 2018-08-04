@@ -1,8 +1,75 @@
 <html>
-<head>
-<title>Kuncha!</title>
-</head>
-<body>
-<font color=red>test</font>
-</body>
+  <head>
+	<title>Story Line Creator</title>
+	<style>
+	  body{
+	  font-size:8vw;
+	  }
+	  </style>
+  </head>
+  <body>
+	<div id="l">
+	  
+	</div>
+	<div id="e">
+	  <b id="et">Edit</b>
+	  <input type="text" id="e0" style="width:100%; font-size: 8vw"/><br/>
+	  <input type="text" id="e1" style="width:100%; font-size: 6vw"/><br/>
+	  <textarea type="text" id="e2" style="width:100%; height: 30vh; font-size: 6vw"></textarea>
+	</div>
+	<script>
+	  var s;
+	  s.t=[];
+	  s.o=[];
+	  var o;
+	  
+	  var
+	  e0 = document.getElementById("e0"), 
+	  e1 = document.getElementById("e1"),
+	  e2 = document.getElementById("e2");
+	  
+	  function addType(){
+	  o = s.t[] = {};
+	  editType("New Type","f00","");
+	  o.__typename = "type";
+	  }
+	  
+	  function selectType(id){
+	  o = s.t[parseInt(id)];
+	  }
+	  
+	  function appendEdit(){
+	  o.n = e0.value;
+	  o.t= e1.value;
+	  o.c = e2.value;
+	  }
+	  
+	  function remove(){
+	  o.__typename = "null";
+	  }
+	  
+	  function addObject(){
+	  o = s.o[] = {};
+	  edit("New Object","","");
+	  o.variables = {};
+	  }
+	  
+	  function selectObject(id){
+	  o = s.o[parseInt(id)];
+	  }
+	  
+	  function editObject(name,type,content){
+	  o.n = name;
+	  o.t = type;
+	  o.c = content;
+	  }
+	  
+	  function viewType(){
+	  e0.hint="Name";
+	  e0.value=t.name;
+	  
+	  }
+	  
+	</script>
+  </body>
 </html>
