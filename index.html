@@ -1,1 +1,120 @@
-15386592515bb613b3dbb7b1.87938893
+<html>
+  <body style="font-size: 2vw;">
+	<textarea id="in" style="resize:none;width:100%;height:90%; font-size: 3vw;"></textarea>
+	<br/>
+	<center>
+	  <button onclick="decrypt();" style="height: 10%; padding: 0.25in; font-size:3vw;">Decrypt</button>
+	  <input type="text" id="pp" style="height: 10%; padding: 0.25in; font-size:4vw;" value="PASSPHRASE"/>
+	  <button onclick="encrypt();" style="height: 10%; padding: 0.25in; font-size:3vw;">Encrypt</button>
+	</center>
+<script>
+	  var inp = document.getElementById("in");
+	  var pss = document.getElementById("pp");
+	  
+		var upoffset = 65;
+		var lowoffset = 97;
+			
+	  function mod(num,mod){
+	    return ((num%mod)+mod)%mod;
+	  }
+	  
+	  function encrypt(){
+	    var phd = 0;
+			var passphrase = pss.value.toUpperCase().replace(/[^A-Z]+/g, "");
+			var passcode = [];
+			var input=inp.value;
+			var result="";
+			
+			
+			// Define pass code from the passphrase
+			for(var i=0;i<passphrase.length;i++){
+				passcode[i] = passphrase.charCodeAt(i)-upoffset;
+			}
+			
+			// Start encode
+			for(var i=0;i<input.length;i++){
+				// Current charcode
+				var charcode = input.charCodeAt(i);
+				// If lowcase
+				var lowcase = charcode>=lowoffset&&charcode<lowoffset+26;
+				// If highcase
+				var upcase = charcode>=upoffset&&charcode<upoffset+26;
+				
+				// Define ncharcode
+				var ncharcode = charcode;
+				
+				// If must be edited
+				if(lowcase||upcase){
+					// Compute offset
+					var offset = lowcase?lowoffset:upoffset;
+					
+					// Get code
+					var code = charcode - offset;
+					
+					// Compute new code
+					ncode = mod(code + passcode[(i+phd)%passcode.length] + phd, 26);
+					
+					// compute new charcode
+					ncharcode = ncode + offset;
+					
+					// Add distorter
+					phd = mod(phd + ncode, 26);
+				}
+				// Add result string
+				result+=String.fromCharCode(ncharcode);
+			}
+			
+			inp.value=result;
+	  }
+		
+		function decrypt(){
+			var phd = 0;
+			var passphrase = pss.value.toUpperCase().replace(/[^A-Z]+/g, "");
+			var passcode = [];
+			var input=inp.value;
+			var result="";
+			
+			
+			// Define pass code from the passphrase
+			for(var i=0;i<passphrase.length;i++){
+				passcode[i] = passphrase.charCodeAt(i)-upoffset;
+			}
+			
+			// Start encode
+			for(var i=0;i<input.length;i++){
+				// Current charcode
+				var charcode = input.charCodeAt(i);
+				// If lowcase
+				var lowcase = charcode>=lowoffset&&charcode<lowoffset+26;
+				// If highcase
+				var upcase = charcode>=upoffset&&charcode<upoffset+26;
+				
+				// Define ncharcode
+				var ncharcode = charcode;
+				
+				// If must be edited
+				if(lowcase||upcase){
+					// Compute offset
+					var offset = lowcase?lowoffset:upoffset;
+					
+					// Get code
+					var code = charcode - offset;
+					
+					// Compute new code
+					ncode = mod(code - passcode[(i+phd)%passcode.length] - phd, 26);
+					
+					// compute new charcode
+					ncharcode = ncode + offset;
+					
+					// Add distorter
+					phd = mod(phd + code, 26);
+				}
+				// Add result string
+				result+=String.fromCharCode(ncharcode);
+			}
+			
+			inp.value=result;
+	  }
+</script>
+  </body>
+</html>
