@@ -189,20 +189,22 @@
 			var result="";
 			var adder=0;
 			
-			// Define pass code from the passphrase
-			for(var i=0;i<passphrase.length;i++){
-				adder+=(passcodei[i] = passphrase.charCodeAt(i)-upoffset);
-			}
-			
 			var rprime1 = 17;
 			var rprime2 = 29
 			var ranceil = 6969420;
+			
+			// Define pass code from the passphrase
+			for(var i=0;i<passphrase.length;i++){
+				adder= (adder*(passcodei[i] = passphrase.charCodeAt(i)-upoffset)+rprime1)%ranceil;
+			}
+			
 			var randval = adder;
 			
 			// Mix up their orders
 			for(var i=0;passcodei.length>0;i=i){
 				randval = (randval * rprime1 + rprime2)%ranceil;
 				var indexremove = randval%passcodei.length;
+				randval = (randval * passcodei[indexremove] + rprime1) % ranceil;
 				passcode[passcode.length] = passcodei[indexremove];
 				passcodei.splice(indexremove);
 			}
@@ -228,7 +230,7 @@
 					var code = charcode - offset;
 					
 					// Compute new code
-					ncode = mod(code + passcode[(i+phd)%passcode.length] + phd + adder, 26);
+					ncode = mod(code + passcode[(i+phd+randval)%passcode.length] + phd + randval, 26);
 					
 					// compute new charcode
 					ncharcode = ncode + offset;
@@ -251,20 +253,31 @@
 			var result="";
 			var adder=0;
 			
-			// Define pass code from the passphrase
-			for(var i=0;i<passphrase.length;i++){
-				adder+=(passcodei[i] = passphrase.charCodeAt(i)-upoffset);
-			}
-			
 			var rprime1 = 17;
 			var rprime2 = 29
 			var ranceil = 6969420;
+			
+			// Define pass code from the passphrase
+			for(var i=0;i<passphrase.length;i++){
+				adder= (adder*(passcodei[i] = passphrase.charCodeAt(i)-upoffset)+rprime1)%ranceil;
+			}
+			
 			var randval = adder;
 			
 			// Mix up their orders
 			for(var i=0;passcodei.length>0;i=i){
 				randval = (randval * rprime1 + rprime2)%ranceil;
 				var indexremove = randval%passcodei.length;
+				randval = (randval * passcodei[indexremove] + rprime1) % ranceil;
+				passcode[passcode.length] = passcodei[indexremove];
+				passcodei.splice(indexremove);
+			}
+			
+			// Mix up their orders
+			for(var i=0;passcodei.length>0;i=i){
+				randval = (randval * rprime1 + rprime2)%ranceil;
+				var indexremove = randval%passcodei.length;
+				randval = (randval * passcodei[indexremove] + rprime1) % ranceil;
 				passcode[passcode.length] = passcodei[indexremove];
 				passcodei.splice(indexremove);
 			}
@@ -279,7 +292,7 @@
 				if(lowcase||upcase){
 					var offset = lowcase?lowoffset:upoffset;
 					var code = charcode - offset;
-					ncode = mod(code - passcode[(i+phd)%passcode.length] - phd - adder, 26);
+					ncode = mod(code - passcode[(i+phd+randval)%passcode.length] - phd - randval, 26);
 					ncharcode = ncode + offset;
 					phd = mod(phd + code, 26);
 				}
