@@ -6,7 +6,7 @@
 </style>
 </head>
 <body>
-<form onsubmit="preventDefault(); var gg = nib.innerHTML; var res=""; for(var i=0;i<gg.length;i++){res+='||'+nib.charAt(i)+'||'}; ba.innerHTML = res;">
+<form onsubmit="event.preventDefault(); var gg = nib.value; var res=''; for(var i=0;i<gg.length;i++){res+='||'+gg.charAt(i)+'||'} ba.value = res;">
 <textarea id="nib" hint="input"></textarea><br/>
 <textarea id="ba" hint="output"></textarea><br/>
 <button type="submit">Okay</button>
