@@ -1,10 +1,15 @@
 <html>
 <head>
 <title>Discord Dense Spoiler Gen</title>
+<style>
+  textarea{width: 100%; resize: none; height: 30vh;}
+</style>
 </head>
 <body>
 <form onsubmit="preventDefault(); var gg = nib.innerHTML; var res=""; for(var i=0;i<gg.length;i++){res+='||'+nib.charAt(i)+'||'}; ba.innerHTML = res;">
-<textarea id="nib" hint="input"></textarea>
-<textarea id="ba" hint="output"></textarea>
+<textarea id="nib" hint="input"></textarea><br/>
+<textarea id="ba" hint="output"></textarea><br/>
+<button type="submit">Okay</button>
+</form>
 </body>
 </html>
