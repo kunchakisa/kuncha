@@ -1,0 +1,251 @@
+<html>
+<head><title>Resistor Mo</title></head>
+<body>
+<h1>Resistor Mo Boi</h1>
+<br/>
+<textarea id="cod" style="font-style: monospace; width: 100%; height: 80%" placeholder="This is a coder themed resistor circuit calculator, by typing codes of simplified circuit formulas, the system can easily calculate everything (as long as the given values are complete, and arranged in the right order)
+
+Syntax:
+gr[number]=[value] // sets the resistor number with value
+gt(v|i|p)=[value] // sets given total value of Voltage, Current or Power
+t[name]/(s|p)/[number or name] // defines the group and it's children (s and p means series or parallel)
+
+Note that the last simplification you leave will be used as the formula of total :)
+
+Made with love by kunchakisa inspired by P-chan daw"></textarea>
+<br/>
+<center><button onclick="f()" style="font-size: 2em">Execute!</button></center>
+<hr/>
+<pre id="ans"></pre>
+<script>
+var cod = document.getElementById("cod");
+var ans = document.getElementById("ans");
+
+function f(){
+	var stres = "";
+	var totalgiven = "";
+	
+	var gives = {
+		r: [],
+		i: [],
+		v: [],
+		p: []
+	}
+	var total = {
+		r: "NaN",
+		i: "NaN",
+		v: "NaN",
+		p: "NaN"
+	};
+	var circs = [];
+	
+	var codes = cod.value.split("\n");
+	
+	console.log(codes);
+	
+	for(var i=0;i<codes.length;i++){
+		if(codes[i].startsWith("gr")){
+			var details = codes[i].substring(2).split("=");
+			gives.r[parseInt(details[0])] = parseFloat(details[1]);
+		}
+		if(codes[i].startsWith("gt")){
+			var details = codes[i].substring(2).split("=");
+			total[details[0]] = parseFloat(details[1]);
+			totalgiven = details[0];
+		}
+		if(codes[i].startsWith("t")){
+			var details = codes[i].substring(1).split(["/"]);
+			
+			var object = {
+				name: details[0],
+				type: details[1],
+				content: details.splice(2),
+				gives: {
+					r: "NaN",
+					i: "NaN",
+					v: "NaN",
+					p: "NaN"
+				}
+			};
+			
+			circs[circs.length] = object;
+		}
+	}
+	
+	console.log(circs, gives);
+	
+	circs[circs.length-1].gives = total;
+	
+	// Start computing...
+	// Compute all rtotal
+	for(var i=0;i<circs.length;i++){
+		var rtot = 0;
+		if(circs[i].type=="s"){
+			stres += "R"+circs[i].name+" = r+r+r...\n";
+			stres += "Content: "+circs[i].content+"\n";
+			for(var j=0;j<circs[i].content.length;j++){
+				rtot+=getval("r"+circs[i].content[j],gives,circs);
+				stres += getval("r"+circs[i].content[j],gives,circs)+",";
+			}
+		}
+		if(circs[i].type=="p"){
+			stres += "R"+circs[i].name+" = 1/(1/r+1/r+1/r...)\n";
+			stres += "Content: "+circs[i].content+"\n";
+			var denom = 0;
+			for(var j=0;j<circs[i].content.length;j++){
+				denom+=1/getval("r"+circs[i].content[j],gives,circs);
+				stres += getval("r"+circs[i].content[j],gives,circs)+",";
+			}
+			rtot=1/denom;
+		}
+		stres+="\n="+rtot+"\n\n";
+		circs[i].gives.r = rtot;
+	}
+	
+	// Compute all totals
+	if(totalgiven=="v"){
+		stres += "Itotal = V/R\n";
+		total.i = total.v/total.r;
+		stres+="="+total.i+"\n\n";
+		stres += "Ptotal = VI\n";
+		total.p = total.v*total.i;
+		stres+="="+total.p+"\n\n";
+	}
+	if(totalgiven=="i"){
+		stres += "Vtotal = IR\n";
+		total.v = total.i*total.r;
+		stres+="="+total.v+"\n\n";
+		stres += "Ptotal = VI\n";
+		total.p = total.v*total.i;
+		stres+="="+total.p+"\n\n";
+	}
+	if(totalgiven=="p"){
+		stres += "Vtotal = sqrt(PR)\n";
+		total.v = Math.sqrt(total.p/total.r);
+		stres+="="+total.v+"\n\n";
+		stres += "Itotal = V/R\n";
+		total.i = total.v/total.r;
+		stres+="="+total.i+"\n\n";
+	}
+	
+	stres = solvevi(circs[circs.length-1],gives,circs,stres);
+	
+	for(var i=1;i<gives.r.length;i++){
+		stres+="R"+i+" = "+getans("r"+i,gives,circs)+"\n";
+		stres+="I"+i+" = "+getans("i"+i,gives,circs)+"\n";
+		stres+="V"+i+" = "+getans("v"+i,gives,circs)+"\n";
+		stres+="P"+i+" = "+getans("p"+i,gives,circs)+"\n\n";
+		
+	}
+	
+	console.log(circs, gives, stres);
+	
+	ans.innerHTML = stres;
+}
+
+function solvevi(circ, g, c, stres){
+	var prop, propv;
+	if(circ.type=="s"){
+		stres+="I"+circ.name+"=constant to "+circ.content+"="+circ.gives.i+"\n";
+	}else{
+		stres+="V"+circ.name+"=constant to "+circ.content+"="+circ.gives.v+"\n";
+	}
+	for(var i=0;i<circ.content.length;i++){
+		if(isNaN(parseInt(circ.content[i]))){
+			var newcirc = getcirc(circ.content[i],c);
+			if(circ.type=="s"){
+				newcirc.gives.i = circ.gives.i;
+				newcirc.gives.v = newcirc.gives.i * newcirc.gives.r;
+				stres+="I"+newcirc.name+"="+getans("i"+newcirc.name,g,c)+"\n";
+				stres+="V"+circ.content[i]+"=IR="+getval("i"+newcirc.name,g,c)+" x "+getval("r"+newcirc.name,g,c)+"\n="+getans("v"+newcirc.name,g,c)+"\n\n";
+			}else{
+				newcirc.gives.v = circ.gives.v;
+				newcirc.gives.i = newcirc.gives.v / newcirc.gives.r;
+				
+				stres+="V"+newcirc.name+"="+getans("v"+newcirc.name,g,c)+"\n";
+				stres+="I"+newcirc.name+"=V/R="+getval("v"+newcirc.name,g,c)+" / "+getval("r"+newcirc.name,g,c)+"\n="+getans("i"+newcirc.name,g,c)+"\n\n";
+			}
+			stres = solvevi(newcirc,g,c,stres);
+		}else{
+			var num = parseInt(circ.content[i]);
+			if(circ.type=="s"){
+				g.i[num] = circ.gives.i;
+				g.v[num] = g.i[num] * g.r[num];
+				stres+="I"+num+"="+getans("i"+num,g,c)+"\n";
+				stres+="V"+num+"=IR="+getval("i"+num,g,c)+" x "+getval("r"+num,g,c)+"\n="+getans("v"+num,g,c)+"\n\n";
+			}else{
+				g.v[num] = circ.gives.v;
+				g.i[num] = g.v[num] / g.r[num];
+				stres+="V"+num+"="+getans("v"+num,g,c)+"\n";
+				stres+="I"+num+"=V/R="+getval("v"+num,g,c)+" / "+getval("r"+num,g,c)+"\n="+getans("i"+num,g,c)+"\n\n";
+			}
+			g.p[num] = g.v[num] * g.i[num];
+			stres+="P"+num+"=VI="+getval("v"+num,g,c)+" x "+getval("i"+num,g,c)+"\n="+getans("p"+num,g,c)+"\n\n";
+		}
+	}
+	return stres;
+}
+
+function getcirc(kowd,c){
+	for(var i=0;i<c.length;i++){
+		if(c[i].name==kowd)return c[i];
+	}
+}
+
+function getval(kowd, g,c){
+	var letter = kowd.charAt(0);
+	var name = kowd.substring(1);
+	if(isNaN(parseInt(name))){
+		for(var i=0;i<c.length;i++){
+			if(c[i].name==name)return c[i].gives[letter];
+		}
+	}else{
+		return g[letter][parseInt(name)];
+	}
+}
+
+function setval(kowd, val, g, c){
+	var name = kowd.substring(1);
+	if(isNaN(parseInt(name))){
+		for(var i=0;i<c.length;i++){
+			if(c[i].name==name)c[i].gives[letter] = val;
+		}
+	}else{
+		g[letter][parseInt(name)]=val;
+	}
+}
+
+var units = {
+	r: "O",
+	i: "A",
+	v: "V",
+	p: "W",
+};
+
+var up = ["K","M","G","T","P"];
+var down = ["m","u","n","p","f"];
+
+function getans(kowd, g,c){
+	var val = getval(kowd,g,c);
+	var prefix = "";
+	var unit = units[kowd.charAt(0)];
+	var takes = -1;
+	if(val>1000){
+		while(val>1000){
+			val/=1000;
+			takes++;
+		}
+		prefix = up[takes];
+	}
+	if(val<1){
+		while(val<1){
+			val*=1000;
+			takes++;
+		}
+		prefix = down[takes];
+	}
+	return val.toFixed(2)+prefix+unit;
+}
+</script>
+</body>
+</html>
