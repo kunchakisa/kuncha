@@ -1,0 +1,162 @@
+<html>
+<head>
+<title>The Rush</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+</head>
+<body bgcolor="black" style="margin: 0; text-align: center;">
+<canvas id="screen" width="480" height="360" style="height: 100%; border: 1px solid white; box-sizing: border-box;"></canvas>
+
+<style>
+button {
+	margin: 2px;
+	float: left;
+	width: 80px; height: 80px;
+	background-color: #fff;
+	border: none;
+	outline: none;
+	transition: 0.25s;
+	font-size: 32px;
+}
+button:active {
+	background-color: #f00;
+	transition: 0.02s;
+}
+</style>
+
+<div style="position: fixed; bottom: 0; left: 0; padding: 30px">
+<button id="btn0">A</button>
+<button id="btn1">B</button><br/>
+<button id="btn2">C</button>
+<button id="btn3">D</button>
+</div>
+<div style="position: fixed; bottom: 0; right: 0; padding: 30px">
+<button id="btn4">W</button>
+<button id="btn5">X</button><br/>
+<button id="btn6">Y</button>
+<button id="btn7">Z</button>
+</div>
+
+<script>
+var canvas = document.getElementById('screen');
+
+var screen = canvas.getContext("2d");
+screen.fillStyle = "rgba(255,255,255,1)";
+screen.fillRect(0,0,480,360);
+
+function _D_D_(){
+	var lastUpdate = Date.now();
+	var myInterval = setInterval(looper, 1000/60);
+	function looper(){
+		var now = Date.now();
+    var dt = now - lastUpdate;
+    lastUpdate = now;
+
+    render(screen, dt/1000);
+	}
+}
+
+window.addEventListener('load', function(){
+	function hem(){
+		console.log(window.innerWidth/window.innerHeight);
+		if(480/360 > window.innerWidth/window.innerHeight){
+			canvas.style.width = '100%';
+			canvas.style.height = 'auto';
+		}else{
+			canvas.style.height = '100%';
+			canvas.style.width = 'auto';
+		}
+	};
+	window.addEventListener('resize', hem);
+	hem();
+});
+
+// Button sequence
+// 0 1       4 5
+// 2 3       6 7
+var btnp = [false, false, false, false, false, false, false, false];
+var btn = [false, false, false, false, false, false, false, false];
+var btnbind = [65, 83, 90, 88, 74, 75, 78, 77];
+var btnx = [10, 65, 10, 65, 365, 420, 365, 420];
+var btny = [245, 245, 300, 300, 245, 245, 300, 300];
+
+window.onkeydown = function(event){
+	for(var i=0; i< btnbind.length; i++){
+		if(event.keyCode == btnbind[i]) btn[i] = true;
+	}
+}
+
+window.onkeyup = function(event){
+	for(var i=0; i< btnbind.length; i++){
+		if(event.keyCode == btnbind[i]) btn[i] = false;
+	}
+}
+
+for(var i=0;i<btnbind.length;i++){
+	var elem = document.getElementById('btn'+i);
+	elem.thenum = i;
+	elem.ontouchstart = elem.onmousedown = function(event){
+		event.preventDefault();
+		btn[this.thenum] = true;
+	}
+	elem.ontouchend = elem.onmouseleave = elem.onmouseup = function(event){
+		event.preventDefault();
+		btn[this.thenum] = false;
+	}
+}
+
+var tota = 0;
+var time = 0;
+var debt = 0;
+var ease = 32;
+var framec = 0;
+
+function render(screen, dt){
+	// Update portion
+	{
+		framec++;
+		
+		time += dt;
+		tota += dt/2;
+		tota += (debt/ease);
+		debt -= debt/ease;
+		
+		if(btn[0]&&btn[0]!=btnp[0]) debt -= 1;
+		if(btn[1]&&btn[1]!=btnp[1]) debt += 1;
+	}
+	// Draw portion
+	{
+		// Clear screen
+		var colvals = Math.max(0,255-Math.abs(debt)*255/2);
+		screen.fillStyle = "rgba(255,"+colvals+","+colvals+",1)";
+		screen.fillRect(0,0,480,360);
+		
+		screen.strokeStyle = "#000";
+		screen.beginPath();
+		screen.moveTo((tota*240)%480,0);
+		screen.lineTo((tota*240)%480,360);
+		screen.stroke();
+
+		screen.font = '12px Arial';
+		screen.fillStyle = "#000";
+		screen.fillText(framec/time,0,40);
+		screen.fillText('Simple test: tap A to move the line left',0,80);
+		screen.fillText('Tap B to move right', 0, 95);
+		
+		for(var i=0; i<btnx.length;i++){
+			if(btn[i]){					
+				screen.fillStyle = "#f00";
+				screen.fillRect(btnx[i],btny[i],50,50);
+			}
+		}
+	}	
+	// Update input portion
+	// Process the copying of previous button
+	for(var i=0; i<btn.length;i++){
+		btnp[i] = btn[i];
+	}
+}
+
+_D_D_();
+</script>
+</body>
+</html>
